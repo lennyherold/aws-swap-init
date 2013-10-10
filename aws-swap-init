@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# swap-init
+#
+# Check to see if epemeral disk is mounted. If it is, and swap doesn't exist,
+# create swap equivalent to memory on the ephemeral drive. If it isn't, and swap doesn't
+# exist, create 512MB of swap on /.
+DEFAULTSIZE=524288
+
+# Check to see if there is swap mounted right now
+# If there is, we're done here
+ISSWAP=`cat /proc/meminfo | grep SwapTotal | awk '{print $2}'`
+if [ $ISSWAP -ne 0 ]
+then
+    exit 0
+fi
+
+# What OS are we running?
+if [ -f /etc/system-release -o -f /etc/redhat-release ]
+then
+    OSTYPE="amzn"
+elif [ -f /etc/lsb-release ]
+then
+    OSTYPE="ubuntu"
+fi
+
+# Set the target directory. If unsupported platform, use root
+case "$OSTYPE" in
+    amzn)
+        TARGET="/media/ephemeral0"
+        ;;
+    ubuntu)
+        TARGET="/mnt"
+        ;;
+    *)
+        TARGET="/"
+        ;;
+esac
+
+# Does a swapfile already exist? If so, activate and be done
+if [ -f $TARGET/swapfile00 ]
+then
+    swapon $TARGET/swapfile00
+    exit 0
+fi
+ 
+# OK, so there's no existing swapfile. Let's make one and activate it.
+
+# If we're on an unsupported OS, or ephemeral disk isn't mounted, use a safe
+# default size. Otherwise, use RAM size
+if [ $TARGET = "/" ]
+then
+    SIZE=$DEFAULTSIZE
+else
+    mount | grep -q " on $TARGET type "
+    if [ $? -eq 0 ]
+    then
+        SIZE=`cat /proc/meminfo | grep "^MemTotal" | awk '{print $2}'`
+    else
+        SIZE=$DEFAULTSIZE
+        TARGET="/"
+    fi
+fi
+        
+# OK, time to get down to business.
+dd if=/dev/zero of=$TARGET/swapfile00 bs=1024 count=$SIZE
+mkswap $TARGET/swapfile00
+swapon $TARGET/swapfile00
+exit 0
