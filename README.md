@@ -19,7 +19,7 @@ chkconfig aws-swap-init on
 
 ### License
 
-Copyright 2012 Corsis
+Copyright 2013 Corsis
 http://www.corsis.com/
 
 Licensed under the Apache License, Version 2.0 (the "License");
