@@ -4,7 +4,7 @@ aws-swap-init is a chkconfig and LSB-capable init script which can be used to au
 
 ### Installation
 
-Simply install in /etc/init.d. Then:
+Simply install in `/etc/init.d`. Then:
 
 #### Ubuntu
 ````
