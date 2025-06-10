@@ -94,6 +94,7 @@ start () {
         
     # OK, time to get down to business.
     /bin/dd if=/dev/zero of=$TARGET/swapfile00 bs=1024 count=$SIZE
+    /bin/chmod 0600 $TARGET/swapfile00
     /sbin/mkswap $TARGET/swapfile00
     /sbin/swapon $TARGET/swapfile00
 }
